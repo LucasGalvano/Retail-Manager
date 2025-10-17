@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 
 import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import ProductsScreen from './src/screens/ProductsScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('login');
@@ -49,6 +50,9 @@ export default function App() {
     setScreen(screenName);
   };
 
+  const handleBack = () => {
+    setScreen('home');
+  };
   
   // Aguardar inicialização
   if (!isInitialized) {
@@ -68,8 +72,12 @@ export default function App() {
       />
     );
   }
-  // Quando clicar em Nova Venda/Produtos/etc., renderiza Home
-  if (screen === 'sales' || screen === 'products' || screen === 'employees' || screen === 'reports') {
+  
+  if (screen === 'products' && user) {
+    return <ProductsScreen user={user} onBack={handleBack} />;
+  }
+
+  if (screen === 'sales' || screen === 'employees' || screen === 'reports') {
     // Renderiza Home novamente, pois a tela real ainda não existe.
     return (
         <HomeScreen

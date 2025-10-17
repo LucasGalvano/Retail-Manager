@@ -70,13 +70,100 @@ export const authService = {
   },
 };
 
+// ========== PRODUTOS (POR USUÁRIO) ==========
+export const productService = {
+  // Obter todos os produtos do usuário
+  getAll: async (userId) => {
+    try {
+      const key = KEYS.PRODUCTS + userId;
+      const data = await AsyncStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      return [];
+    }
+  },
+
+  // Adicionar novo produto
+  add: async (userId, product) => {
+    try {
+      const products = await productService.getAll(userId);
+      const newProduct = {
+        id: Date.now().toString(),
+        ...product,
+        createdAt: new Date().toISOString(),
+      };
+      products.push(newProduct);
+      
+      const key = KEYS.PRODUCTS + userId;
+      await AsyncStorage.setItem(key, JSON.stringify(products));
+      return newProduct;
+    } catch (error) {
+      console.error('Erro ao adicionar produto:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar produto
+  update: async (userId, id, updatedData) => {
+    try {
+      const products = await productService.getAll(userId);
+      const index = products.findIndex(p => p.id === id);
+      if (index !== -1) {
+        products[index] = { ...products[index], ...updatedData };
+        
+        const key = KEYS.PRODUCTS + userId;
+        await AsyncStorage.setItem(key, JSON.stringify(products));
+        return products[index];
+      }
+      throw new Error('Produto não encontrado');
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      throw error;
+    }
+  },
+
+  // Deletar produto
+  delete: async (userId, id) => {
+    try {
+      const products = await productService.getAll(userId);
+      const filtered = products.filter(p => p.id !== id);
+      
+      const key = KEYS.PRODUCTS + userId;
+      await AsyncStorage.setItem(key, JSON.stringify(filtered));
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar produto:', error);
+      throw error;
+    }
+  },
+
+  // Obter estatísticas
+  getStats: async (userId) => {
+    try {
+      const products = await productService.getAll(userId);
+      const totalProducts = products.length;
+      const totalValue = products.reduce((sum, p) => sum + (p.preco * p.estoque), 0);
+      const lowStock = products.filter(p => p.estoque < 10).length;
+      
+      return {
+        totalProducts,
+        totalValue,
+        lowStock,
+      };
+    } catch (error) {
+      console.error('Erro ao calcular estatísticas:', error);
+      return { totalProducts: 0, totalValue: 0, lowStock: 0 };
+    }
+  },
+};
+
 // ========== UTILITÁRIOS ==========
 export const storageUtils = {
-  // Limpar todo o storage do seu app (útil para desenvolvimento)
+  // Limpar todo o storage do seu app
   clearAll: async () => {
     try {
       const allKeys = await AsyncStorage.getAllKeys();
-      // Filtra apenas as chaves que começam com o prefixo do seu app
       const retailKeys = allKeys.filter(key => key.startsWith('@retail_manager:'));
       await AsyncStorage.multiRemove(retailKeys);
       return true;
