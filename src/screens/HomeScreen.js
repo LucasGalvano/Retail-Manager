@@ -11,26 +11,25 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { productService } from '../services/StorageServices';
 
-
-
+// ========== TELA HOME (DASHBOARD) ==========
 const HomeScreen = ({ user, onLogout, onNavigate }) => {
-  const [stats, setStats] = useState({
-    salesToday: 1500.00, // Valor simulado
-    totalProducts: 45,   // Valor simulado
-    totalEmployees: 5,   // Valor simulado
-  });
-  const [recentSales, setRecentSales] = useState([
-    { id: '1234', valorTotal: 350.50, vendedorNome: 'João', createdAt: new Date(Date.now() - 600000).toISOString() },
-    { id: '5678', valorTotal: 120.00, vendedorNome: 'Maria', createdAt: new Date(Date.now() - 3600000).toISOString() },
-  ]);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+    loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    try {
+      // Buscar quantidade de produtos
+      const products = await productService.getAll(user.uid);
+      setTotalProducts(products.length);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    }
   };
 
   const onRefresh = async () => {
@@ -40,42 +39,23 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
     setRefreshing(false);
   };
 
-  const formatCurrency = (value) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
-
-  const formatRelativeTime = (dateString) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now - date) / 1000 / 60);
-
-    if (diffInMinutes < 1) return 'Agora';
-    if (diffInMinutes < 60) return `Há ${diffInMinutes}m`;
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `Há ${diffInHours}h`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `Há ${diffInDays}d`;
-  };
-
   const statsData = [
     {
       icon: 'trending-up',
       label: 'Vendas Hoje',
-      value: formatCurrency(stats.salesToday),
+      value: 'R$ 0,00',
       colors: ['#10b981', '#059669'],
     },
     {
       icon: 'cube',
       label: 'Produtos',
-      value: stats.totalProducts.toString(),
+      value: totalProducts.toString(),
       colors: ['#3b82f6', '#06b6d4'],
     },
     {
       icon: 'people',
       label: 'Funcionários',
-      value: stats.totalEmployees.toString(),
+      value: '0',
       colors: ['#a855f7', '#ec4899'],
     },
   ];
@@ -109,7 +89,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
 
   const handleActionPress = (screen) => {
     Vibration.vibrate(30);
-    onNavigate(screen); 
+    onNavigate(screen);
   };
 
   return (
@@ -130,7 +110,6 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
               </Text>
             </View>
           </View>
-          {/* O botão de Logout funciona via onLogout passado pelo App.js */}
           <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Sair</Text>
           </TouchableOpacity>
@@ -148,7 +127,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
           />
         }
       >
-        {/* Stats Cards (com dados simulados) */}
+        {/* Stats Cards */}
         <View style={styles.statsContainer}>
           {statsData.map((stat, index) => (
             <View key={index} style={styles.statCard}>
@@ -164,7 +143,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
           ))}
         </View>
 
-        {/* Ações Rápidas (com botões prontos para navegar) */}
+        {/* Ações Rápidas */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ações Rápidas</Text>
           <View style={styles.actionsGrid}>
@@ -182,36 +161,13 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
           </View>
         </View>
 
-        {/* Últimas Vendas (com dados simulados) */}
+        {/* Últimas Vendas */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Últimas Vendas</Text>
-          {recentSales.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="cart-outline" size={48} color="#475569" />
-              <Text style={styles.emptyText}>Nenhuma venda registrada</Text>
-            </View>
-          ) : (
-            recentSales.map((sale) => (
-              <View key={sale.id} style={styles.saleCard}>
-                <View>
-                  <Text style={styles.saleId}>
-                    Venda #{sale.id.slice(-4)}
-                  </Text>
-                  <Text style={styles.saleSeller}>
-                    Vendedor: {sale.vendedorNome || 'N/A'}
-                  </Text>
-                </View>
-                <View style={styles.saleRight}>
-                  <Text style={styles.saleValue}>
-                    {formatCurrency(sale.valorTotal)}
-                  </Text>
-                  <Text style={styles.saleTime}>
-                    {formatRelativeTime(sale.createdAt)}
-                  </Text>
-                </View>
-              </View>
-            ))
-          )}
+          <View style={styles.emptyState}>
+            <Ionicons name="cart-outline" size={48} color="#475569" />
+            <Text style={styles.emptyText}>Nenhuma venda registrada</Text>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -220,6 +176,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
 
 export default HomeScreen;
 
+// ========== ESTILOS ==========
 const styles = StyleSheet.create({
   homeContainer: {
     flex: 1,
@@ -338,37 +295,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     marginTop: 12,
-  },
-  saleCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  saleId: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  saleSeller: {
-    color: '#94a3b8',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  saleRight: {
-    alignItems: 'flex-end',
-  },
-  saleValue: {
-    color: '#10b981',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  saleTime: {
-    color: '#94a3b8',
-    fontSize: 12,
-    marginTop: 4,
   },
 });

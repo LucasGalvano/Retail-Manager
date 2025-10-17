@@ -2,7 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
   USERS: '@retail_manager:users',
+  PRODUCTS: '@retail_manager:products:',
 };
+
 export const authService = {
   signUp: async (email, password, name) => {
     try {
