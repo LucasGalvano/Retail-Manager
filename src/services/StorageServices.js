@@ -4,6 +4,7 @@ const KEYS = {
   USERS: '@retail_manager:users',
   PRODUCTS: '@retail_manager:products:',
   EMPLOYEES: '@retail_manager:employees:',
+  SALES: '@retail_manager:sales:',
 };
 
 export const authService = {
@@ -161,9 +162,9 @@ export const productService = {
   },
 };
 
-
-// ========== FUNCIONÁRIOS ==========
+// ========== FUNCIONÁRIOS (POR USUÁRIO) ==========
 export const employeeService = {
+  // Obter todos os funcionários do usuário
   getAll: async (userId) => {
     try {
       const key = KEYS.EMPLOYEES + userId;
@@ -230,10 +231,145 @@ export const employeeService = {
   },
 };
 
+// ========== VENDAS (POR USUÁRIO) ==========
+export const salesService = {
+  // Obter todas as vendas do usuário
+  getAll: async (userId) => {
+    try {
+      const key = KEYS.SALES + userId;
+      const data = await AsyncStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Erro ao buscar vendas:', error);
+      return [];
+    }
+  },
+
+  // Adicionar nova venda
+  add: async (userId, sale) => {
+    try {
+      const sales = await salesService.getAll(userId);
+      const newSale = {
+        id: Date.now().toString(),
+        ...sale,
+        createdAt: new Date().toISOString(),
+      };
+      sales.push(newSale);
+      
+      const key = KEYS.SALES + userId;
+      await AsyncStorage.setItem(key, JSON.stringify(sales));
+      return newSale;
+    } catch (error) {
+      console.error('Erro ao adicionar venda:', error);
+      throw error;
+    }
+  },
+
+  // Obter vendas de hoje
+  getTodaySales: async (userId) => {
+    try {
+      const sales = await salesService.getAll(userId);
+      const today = new Date().toISOString().split('T')[0];
+      
+      return sales.filter(sale => {
+        const saleDate = new Date(sale.createdAt).toISOString().split('T')[0];
+        return saleDate === today;
+      });
+    } catch (error) {
+      console.error('Erro ao buscar vendas de hoje:', error);
+      return [];
+    }
+  },
+
+  // Obter total de vendas de hoje
+  getTodayTotal: async (userId) => {
+    try {
+      const todaySales = await salesService.getTodaySales(userId);
+      return todaySales.reduce((sum, sale) => sum + sale.valorTotal, 0);
+    } catch (error) {
+      console.error('Erro ao calcular total de hoje:', error);
+      return 0;
+    }
+  },
+
+  // Obter últimas vendas (limite)
+  getRecent: async (userId, limit = 5) => {
+    try {
+      const sales = await salesService.getAll(userId);
+      return sales
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit);
+    } catch (error) {
+      console.error('Erro ao buscar vendas recentes:', error);
+      return [];
+    }
+  },
+
+  // Processar venda com validação de estoque
+  processSale: async (userId, saleData) => {
+    try {
+      const { funcionarioId, produtos } = saleData;
+
+      // 1. Validar funcionário
+      const employees = await employeeService.getAll(userId);
+      const employee = employees.find(e => e.id === funcionarioId);
+      if (!employee) {
+        throw new Error('Funcionário não encontrado');
+      }
+
+      // 2. Validar produtos e estoque
+      const allProducts = await productService.getAll(userId);
+      let valorTotal = 0;
+      const produtosVenda = [];
+
+      for (const item of produtos) {
+        const product = allProducts.find(p => p.id === item.produtoId);
+        
+        if (!product) {
+          throw new Error(`Produto não encontrado: ${item.produtoId}`);
+        }
+
+        if (product.estoque < item.quantidade) {
+          throw new Error(`Estoque insuficiente para ${product.nome}. Disponível: ${product.estoque}`);
+        }
+
+        const subtotal = product.preco * item.quantidade;
+        valorTotal += subtotal;
+
+        produtosVenda.push({
+          produtoId: product.id,
+          nome: product.nome,
+          preco: product.preco,
+          quantidade: item.quantidade,
+          subtotal,
+        });
+
+        // 3. Atualizar estoque
+        await productService.update(userId, product.id, {
+          estoque: product.estoque - item.quantidade,
+        });
+      }
+
+      // 4. Criar venda
+      const sale = {
+        funcionarioId: employee.id,
+        funcionarioNome: employee.nome,
+        produtos: produtosVenda,
+        valorTotal,
+      };
+
+      const newSale = await salesService.add(userId, sale);
+      return newSale;
+    } catch (error) {
+      console.error('Erro ao processar venda:', error);
+      throw error;
+    }
+  },
+};
+
 
 // ========== UTILITÁRIOS ==========
 export const storageUtils = {
-  // Limpar todo o storage do seu app
   clearAll: async () => {
     try {
       const allKeys = await AsyncStorage.getAllKeys();
