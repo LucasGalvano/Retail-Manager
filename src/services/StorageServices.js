@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   USERS: '@retail_manager:users',
   PRODUCTS: '@retail_manager:products:',
+  EMPLOYEES: '@retail_manager:employees:',
 };
 
 export const authService = {
@@ -159,6 +160,76 @@ export const productService = {
     }
   },
 };
+
+
+// ========== FUNCIONÁRIOS ==========
+export const employeeService = {
+  getAll: async (userId) => {
+    try {
+      const key = KEYS.EMPLOYEES + userId;
+      const data = await AsyncStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error);
+      return [];
+    }
+  },
+
+  // Adicionar novo funcionário
+  add: async (userId, employee) => {
+    try {
+      const employees = await employeeService.getAll(userId);
+      const newEmployee = {
+        id: Date.now().toString(),
+        ...employee,
+        createdAt: new Date().toISOString(),
+      };
+      employees.push(newEmployee);
+      
+      const key = KEYS.EMPLOYEES + userId;
+      await AsyncStorage.setItem(key, JSON.stringify(employees));
+      return newEmployee;
+    } catch (error) {
+      console.error('Erro ao adicionar funcionário:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar funcionário
+  update: async (userId, id, updatedData) => {
+    try {
+      const employees = await employeeService.getAll(userId);
+      const index = employees.findIndex(e => e.id === id);
+      if (index !== -1) {
+        employees[index] = { ...employees[index], ...updatedData };
+        
+        const key = KEYS.EMPLOYEES + userId;
+        await AsyncStorage.setItem(key, JSON.stringify(employees));
+        return employees[index];
+      }
+      throw new Error('Funcionário não encontrado');
+    } catch (error) {
+      console.error('Erro ao atualizar funcionário:', error);
+      throw error;
+    }
+  },
+
+  // Deletar funcionário
+  delete: async (userId, id) => {
+    try {
+      const employees = await employeeService.getAll(userId);
+      const filtered = employees.filter(e => e.id !== id);
+      
+      const key = KEYS.EMPLOYEES + userId;
+      await AsyncStorage.setItem(key, JSON.stringify(filtered));
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar funcionário:', error);
+      throw error;
+    }
+  },
+};
+
 
 // ========== UTILITÁRIOS ==========
 export const storageUtils = {
