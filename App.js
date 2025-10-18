@@ -5,6 +5,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ProductsScreen from './src/screens/ProductsScreen';
 import EmployeesScreen from './src/screens/EmployeeScreen';
+import SalesScreen from './src/screens/SalesScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('login');
@@ -82,7 +83,11 @@ export default function App() {
     return <EmployeesScreen user={user} onBack={handleBack} />;
   }
 
-  if (screen === 'sales' || screen === 'reports') {
+  if (screen === 'sales' && user){
+    return <SalesScreen user={user} onBack={handleBack} />;
+  }
+
+  if (screen === 'reports') {
     // Renderiza Home novamente, pois a tela real ainda não existe.
     return (
         <HomeScreen
