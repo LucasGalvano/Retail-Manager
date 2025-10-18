@@ -11,11 +11,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { productService } from '../services/StorageServices';
+import { productService, employeeService } from '../services/StorageServices';
 
 // ========== TELA HOME (DASHBOARD) ==========
 const HomeScreen = ({ user, onLogout, onNavigate }) => {
   const [totalProducts, setTotalProducts] = useState(0);
+  const [totalEmployees, setTotalEmployees] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -24,9 +25,14 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
 
   const loadDashboardData = async () => {
     try {
-      // Buscar quantidade de produtos
+      // Busca a quantidade de produtos
       const products = await productService.getAll(user.uid);
       setTotalProducts(products.length);
+
+      // Busca a quantidade de funcionários
+      const employees = await employeeService.getAll(user.uid);
+      setTotalEmployees(employees.length);
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     }
@@ -55,7 +61,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
     {
       icon: 'people',
       label: 'Funcionários',
-      value: '0',
+      value: totalEmployees.toString(),
       colors: ['#a855f7', '#ec4899'],
     },
   ];
