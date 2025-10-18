@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, ScrollView, StatusBar,
-        Alert, Vibration, Modal, KeyboardAvoidingView, Platform} from 'react-native';
+        Alert, Vibration, TextInput, KeyboardAvoidingView, Platform} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { salesService, employeeService, productService } from '../services/StorageServices';
 
 const SalesScreen = ({ user, onBack }) => {
+  const [currentView, setCurrentView] = useState('list');
   const [sales, setSales] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Listas disponíveis
@@ -17,8 +17,6 @@ const SalesScreen = ({ user, onBack }) => {
   // Form state
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [cart, setCart] = useState([]);
-  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -56,6 +54,7 @@ const SalesScreen = ({ user, onBack }) => {
     }
 
     Vibration.vibrate(30);
+    setCurrentView('newSale');
   };
 
   const handleRemoveFromCart = (produtoId) => {
@@ -118,10 +117,11 @@ const SalesScreen = ({ user, onBack }) => {
               });
 
               Vibration.vibrate([50, 50, 50]);
-              Alert.alert('Sucesso!', 'Venda realizada com sucesso!', [
-                { text: 'OK', onPress: () => handleCloseModal() }
-              ]);
+              Alert.alert('Sucesso!', 'Venda realizada com sucesso!');
 
+              setSelectedEmployee(null);
+              setCart([]);
+              setCurrentView('list');
               await loadData();
             } catch (error) {
               Vibration.vibrate([100, 50, 100]);
@@ -135,10 +135,23 @@ const SalesScreen = ({ user, onBack }) => {
     );
   };
 
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedEmployee(null);
-    setCart([]);
+  const handleCancelSale = () => {
+    Alert.alert(
+      'Cancelar Venda',
+      'Deseja descartar esta venda?',
+      [
+        { text: 'Não', style: 'cancel' },
+        {
+          text: 'Sim',
+          style: 'destructive',
+          onPress: () => {
+            setSelectedEmployee(null);
+            setCart([]);
+            setCurrentView('list');
+          },
+        },
+      ]
+    );
   };
 
   const formatCurrency = (value) => {
@@ -156,329 +169,298 @@ const SalesScreen = ({ user, onBack }) => {
     });
   };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+  // ========== VIEW: LISTA DE VENDAS ==========
+  if (currentView === 'list') {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <LinearGradient colors={['#1e293b', '#0f172a']} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Ionicons name="cart" size={28} color="#10b981" />
-            <Text style={styles.headerTitle}>Vendas</Text>
-          </View>
-          <View style={{ width: 40 }} />
-        </View>
-      </LinearGradient>
-
-      {/* Lista de Vendas */}
-      <ScrollView style={styles.content}>
-        {sales.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="cart-outline" size={80} color="#475569" />
-            <Text style={styles.emptyText}>Nenhuma venda realizada</Text>
-            <Text style={styles.emptySubtext}>
-              Toque no botão + para iniciar
-            </Text>
-          </View>
-        ) : (
-          sales.map((sale) => (
-            <View key={sale.id} style={styles.saleCard}>
-              <View style={styles.saleHeader}>
-                <View>
-                  <Text style={styles.saleId}>Venda #{sale.id.slice(-6)}</Text>
-                  <Text style={styles.saleDate}>{formatDate(sale.createdAt)}</Text>
-                </View>
-                <Text style={styles.saleTotal}>{formatCurrency(sale.valorTotal)}</Text>
-              </View>
-
-              <View style={styles.saleInfo}>
-                <View style={styles.saleInfoRow}>
-                  <Ionicons name="person" size={16} color="#94a3b8" />
-                  <Text style={styles.saleInfoText}>{sale.funcionarioNome}</Text>
-                </View>
-
-                <View style={styles.saleInfoRow}>
-                  <Ionicons name="cube" size={16} color="#94a3b8" />
-                  <Text style={styles.saleInfoText}>
-                    {sale.produtos.length} {sale.produtos.length === 1 ? 'produto' : 'produtos'}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.productsList}>
-                {sale.produtos.map((produto, index) => (
-                  <Text key={index} style={styles.productItem}>
-                    • {produto.quantidade}x {produto.nome} - {formatCurrency(produto.subtotal)}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
-
-      {/* Botão Nova Venda */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => {
-          if (employees.length === 0) {
-            Alert.alert('Atenção', 'Cadastre funcionários antes de realizar vendas');
-            return;
-          }
-          if (products.length === 0) {
-            Alert.alert('Atenção', 'Cadastre produtos antes de realizar vendas');
-            return;
-          }
-          Vibration.vibrate(30);
-          setModalVisible(true);
-        }}
-        activeOpacity={0.8}
-      >
-        <LinearGradient
-          colors={['#10b981', '#059669']}
-          style={styles.fabGradient}
-        >
-          <Ionicons name="add" size={32} color="#fff" />
-        </LinearGradient>
-      </TouchableOpacity>
-
-      {/* Modal Nova Venda */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={handleCloseModal}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={handleCloseModal}
-        >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalKeyboardView}
-          >
-            <TouchableOpacity 
-              activeOpacity={1}
-              onPress={(e) => e.stopPropagation()}
-              style={styles.modalContent}
-            >
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Nova Venda</Text>
-                <TouchableOpacity onPress={handleCloseModal}>
-                  <Ionicons name="close" size={28} color="#fff" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
-                {/* Seleção de Funcionário */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Funcionário *</Text>
-                  <TouchableOpacity
-                    style={styles.selectButton}
-                    onPress={() => setShowEmployeeModal(true)}
-                  >
-                    <Ionicons name="person" size={20} color="#a855f7" />
-                    <Text style={styles.selectButtonText}>
-                      {selectedEmployee ? selectedEmployee.nome : 'Selecionar funcionário'}
-                    </Text>
-                    <Ionicons name="chevron-down" size={20} color="#64748b" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Carrinho */}
-                <View style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Produtos</Text>
-                    <TouchableOpacity
-                      style={styles.addProductButton}
-                      onPress={() => setShowProductModal(true)}
-                    >
-                      <Ionicons name="add-circle" size={24} color="#10b981" />
-                    </TouchableOpacity>
-                  </View>
-
-                  {cart.length === 0 ? (
-                    <View style={styles.emptyCart}>
-                      <Ionicons name="cart-outline" size={40} color="#475569" />
-                      <Text style={styles.emptyCartText}>Carrinho vazio</Text>
-                    </View>
-                  ) : (
-                    cart.map((item) => (
-                      <View key={item.produtoId} style={styles.cartItem}>
-                        <View style={styles.cartItemInfo}>
-                          <Text style={styles.cartItemName}>{item.nome}</Text>
-                          <Text style={styles.cartItemPrice}>{formatCurrency(item.preco)}</Text>
-                        </View>
-
-                        <View style={styles.cartItemActions}>
-                          <TouchableOpacity
-                            style={styles.quantityButton}
-                            onPress={() => handleUpdateQuantity(item.produtoId, item.quantidade - 1)}
-                          >
-                            <Ionicons name="remove" size={16} color="#fff" />
-                          </TouchableOpacity>
-
-                          <Text style={styles.quantityText}>{item.quantidade}</Text>
-
-                          <TouchableOpacity
-                            style={styles.quantityButton}
-                            onPress={() => handleUpdateQuantity(item.produtoId, item.quantidade + 1)}
-                          >
-                            <Ionicons name="add" size={16} color="#fff" />
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            style={styles.removeButton}
-                            onPress={() => handleRemoveFromCart(item.produtoId)}
-                          >
-                            <Ionicons name="trash" size={16} color="#ef4444" />
-                          </TouchableOpacity>
-                        </View>
-
-                        <Text style={styles.cartItemSubtotal}>
-                          {formatCurrency(item.preco * item.quantidade)}
-                        </Text>
-                      </View>
-                    ))
-                  )}
-                </View>
-
-                {/* Total */}
-                {cart.length > 0 && (
-                  <View style={styles.totalCard}>
-                    <Text style={styles.totalLabel}>Total da Venda:</Text>
-                    <Text style={styles.totalValue}>{formatCurrency(calculateTotal())}</Text>
-                  </View>
-                )}
-
-                {/* Botão Finalizar */}
-                <TouchableOpacity
-                  style={[styles.finalizeButton, loading && styles.finalizeButtonDisabled]}
-                  onPress={handleFinalizeSale}
-                  disabled={loading}
-                >
-                  <LinearGradient
-                    colors={['#10b981', '#059669']}
-                    style={styles.finalizeButtonGradient}
-                  >
-                    <Ionicons name="checkmark-circle" size={24} color="#fff" />
-                    <Text style={styles.finalizeButtonText}>
-                      {loading ? 'Processando...' : 'Finalizar Venda'}
-                    </Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </ScrollView>
+        <LinearGradient colors={['#1e293b', '#0f172a']} style={styles.header}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={onBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
-          </KeyboardAvoidingView>
-        </TouchableOpacity>
-      </Modal>
-
-      {/* Modal Selecionar Funcionário */}
-      <Modal
-        visible={showEmployeeModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEmployeeModal(false)}
-      >
-        <TouchableOpacity 
-          style={styles.pickerModal}
-          activeOpacity={1}
-          onPress={() => setShowEmployeeModal(false)}
-        >
-          <TouchableOpacity 
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={styles.pickerContent}
-          >
-            <View style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>Selecionar Funcionário</Text>
-              <TouchableOpacity 
-                onPress={() => setShowEmployeeModal(false)}
-                style={styles.pickerCloseIcon}
-              >
-                <Ionicons name="close" size={24} color="#fff" />
-              </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Ionicons name="cart" size={28} color="#10b981" />
+              <Text style={styles.headerTitle}>Vendas</Text>
             </View>
-            
-            <ScrollView>
-              {employees.map((employee) => (
-                <TouchableOpacity
-                  key={employee.id}
-                  style={styles.pickerItem}
-                  onPress={() => {
-                    setSelectedEmployee(employee);
-                    setShowEmployeeModal(false);
-                    Vibration.vibrate(30);
-                  }}
-                >
-                  <Ionicons name="person" size={24} color="#a855f7" />
-                  <Text style={styles.pickerItemText}>{employee.nome}</Text>
-                  {selectedEmployee?.id === employee.id && (
-                    <Ionicons name="checkmark" size={24} color="#10b981" />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+            <View style={{ width: 40 }} />
+          </View>
+        </LinearGradient>
 
-      {/* Modal Selecionar Produto */}
-      <Modal
-        visible={showProductModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowProductModal(false)}
-      >
-        <TouchableOpacity 
-          style={styles.pickerModal}
-          activeOpacity={1}
-          onPress={() => setShowProductModal(false)}
-        >
-          <TouchableOpacity 
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={styles.pickerContent}
-          >
-            <View style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>Adicionar Produto</Text>
-              <TouchableOpacity 
-                onPress={() => setShowProductModal(false)}
-                style={styles.pickerCloseIcon}
-              >
-                <Ionicons name="close" size={24} color="#fff" />
-              </TouchableOpacity>
+        <ScrollView style={styles.content}>
+          {sales.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="cart-outline" size={80} color="#475569" />
+              <Text style={styles.emptyText}>Nenhuma venda realizada</Text>
+              <Text style={styles.emptySubtext}>Toque no botão + para iniciar</Text>
             </View>
-            
-            <ScrollView>
-              {products.filter(p => p.estoque > 0).map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={styles.pickerItem}
-                  onPress={() => {
-                    handleAddToCart(product, 1);
-                    setShowProductModal(false);
-                  }}
-                >
-                  <View style={styles.productPickerInfo}>
-                    <Text style={styles.pickerItemText}>{product.nome}</Text>
-                    <Text style={styles.productPickerPrice}>{formatCurrency(product.preco)}</Text>
-                    <Text style={styles.productPickerStock}>Estoque: {product.estoque}</Text>
+          ) : (
+            sales.map((sale) => (
+              <View key={sale.id} style={styles.saleCard}>
+                <View style={styles.saleHeader}>
+                  <View>
+                    <Text style={styles.saleId}>Venda #{sale.id.slice(-6)}</Text>
+                    <Text style={styles.saleDate}>{formatDate(sale.createdAt)}</Text>
                   </View>
+                  <Text style={styles.saleTotal}>{formatCurrency(sale.valorTotal)}</Text>
+                </View>
+
+                <View style={styles.saleInfo}>
+                  <View style={styles.saleInfoRow}>
+                    <Ionicons name="person" size={16} color="#94a3b8" />
+                    <Text style={styles.saleInfoText}>{sale.funcionarioNome}</Text>
+                  </View>
+                  <View style={styles.saleInfoRow}>
+                    <Ionicons name="cube" size={16} color="#94a3b8" />
+                    <Text style={styles.saleInfoText}>
+                      {sale.produtos.length} {sale.produtos.length === 1 ? 'produto' : 'produtos'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.productsList}>
+                  {sale.produtos.map((produto, index) => (
+                    <Text key={index} style={styles.productItem}>
+                      • {produto.quantidade}x {produto.nome} - {formatCurrency(produto.subtotal)}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => {
+            if (employees.length === 0) {
+              Alert.alert('Atenção', 'Cadastre funcionários antes de realizar vendas');
+              return;
+            }
+            if (products.length === 0) {
+              Alert.alert('Atenção', 'Cadastre produtos antes de realizar vendas');
+              return;
+            }
+            Vibration.vibrate(30);
+            setCurrentView('newSale');
+          }}
+          activeOpacity={0.8}
+        >
+          <LinearGradient colors={['#10b981', '#059669']} style={styles.fabGradient}>
+            <Ionicons name="add" size={32} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ========== VIEW: NOVA VENDA ==========
+  if (currentView === 'newSale') {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+
+        <LinearGradient colors={['#1e293b', '#0f172a']} style={styles.header}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={handleCancelSale} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Ionicons name="cart" size={28} color="#10b981" />
+              <Text style={styles.headerTitle}>Nova Venda</Text>
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
+        </LinearGradient>
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView style={styles.content}>
+            {/* Seleção de Funcionário */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Funcionário *</Text>
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={() => setCurrentView('selectEmployee')}
+              >
+                <Ionicons name="person" size={20} color="#a855f7" />
+                <Text style={styles.selectButtonText}>
+                  {selectedEmployee ? selectedEmployee.nome : 'Selecionar funcionário'}
+                </Text>
+                <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Carrinho */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Produtos</Text>
+                <TouchableOpacity
+                  style={styles.addProductButton}
+                  onPress={() => setCurrentView('selectProduct')}
+                >
                   <Ionicons name="add-circle" size={24} color="#10b981" />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
-    </View>
-  );
+              </View>
+
+              {cart.length === 0 ? (
+                <View style={styles.emptyCart}>
+                  <Ionicons name="cart-outline" size={40} color="#475569" />
+                  <Text style={styles.emptyCartText}>Carrinho vazio</Text>
+                </View>
+              ) : (
+                cart.map((item) => (
+                  <View key={item.produtoId} style={styles.cartItem}>
+                    <View style={styles.cartItemInfo}>
+                      <Text style={styles.cartItemName}>{item.nome}</Text>
+                      <Text style={styles.cartItemPrice}>{formatCurrency(item.preco)}</Text>
+                    </View>
+
+                    <View style={styles.cartItemActions}>
+                      <TouchableOpacity
+                        style={styles.quantityButton}
+                        onPress={() => handleUpdateQuantity(item.produtoId, item.quantidade - 1)}
+                      >
+                        <Ionicons name="remove" size={16} color="#fff" />
+                      </TouchableOpacity>
+
+                      <Text style={styles.quantityText}>{item.quantidade}</Text>
+
+                      <TouchableOpacity
+                        style={styles.quantityButton}
+                        onPress={() => handleUpdateQuantity(item.produtoId, item.quantidade + 1)}
+                      >
+                        <Ionicons name="add" size={16} color="#fff" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => handleRemoveFromCart(item.produtoId)}
+                      >
+                        <Ionicons name="trash" size={16} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.cartItemSubtotal}>
+                      {formatCurrency(item.preco * item.quantidade)}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
+
+            {/* Total */}
+            {cart.length > 0 && (
+              <View style={styles.totalCard}>
+                <Text style={styles.totalLabel}>Total da Venda:</Text>
+                <Text style={styles.totalValue}>{formatCurrency(calculateTotal())}</Text>
+              </View>
+            )}
+
+            {/* Botão Finalizar */}
+            <TouchableOpacity
+              style={[styles.finalizeButton, loading && styles.finalizeButtonDisabled]}
+              onPress={handleFinalizeSale}
+              disabled={loading}
+            >
+              <LinearGradient colors={['#10b981', '#059669']} style={styles.finalizeButtonGradient}>
+                <Ionicons name="checkmark-circle" size={24} color="#fff" />
+                <Text style={styles.finalizeButtonText}>
+                  {loading ? 'Processando...' : 'Finalizar Venda'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
+
+  // ========== SELECIONAR FUNCIONÁRIO ==========
+  if (currentView === 'selectEmployee') {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+
+        <LinearGradient colors={['#1e293b', '#0f172a']} style={styles.header}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={() => setCurrentView('newSale')} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Ionicons name="person" size={28} color="#a855f7" />
+              <Text style={styles.headerTitle}>Selecionar Funcionário</Text>
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
+        </LinearGradient>
+
+        <ScrollView style={styles.content}>
+          {employees.map((employee) => (
+            <TouchableOpacity
+              key={employee.id}
+              style={styles.pickerItem}
+              onPress={() => {
+                setSelectedEmployee(employee);
+                setCurrentView('newSale');
+                Vibration.vibrate(30);
+              }}
+            >
+              <Ionicons name="person" size={24} color="#a855f7" />
+              <Text style={styles.pickerItemText}>{employee.nome}</Text>
+              {selectedEmployee?.id === employee.id && (
+                <Ionicons name="checkmark" size={24} color="#10b981" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ========== SELECIONAR PRODUTO ==========
+  if (currentView === 'selectProduct') {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+
+        <LinearGradient colors={['#1e293b', '#0f172a']} style={styles.header}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={() => setCurrentView('newSale')} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Ionicons name="cube" size={28} color="#10b981" />
+              <Text style={styles.headerTitle}>Adicionar Produto</Text>
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
+        </LinearGradient>
+
+        <ScrollView style={styles.content}>
+          {products.filter(p => p.estoque > 0).map((product) => (
+            <TouchableOpacity
+              key={product.id}
+              style={styles.pickerItem}
+              onPress={() => handleAddToCart(product, 1)}
+            >
+              <View style={styles.productPickerInfo}>
+                <Text style={styles.pickerItemText}>{product.nome}</Text>
+                <Text style={styles.productPickerPrice}>{formatCurrency(product.preco)}</Text>
+                <Text style={styles.productPickerStock}>Estoque: {product.estoque}</Text>
+              </View>
+              <Ionicons name="add-circle" size={24} color="#10b981" />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return null;
 };
 
 export default SalesScreen;
@@ -606,36 +588,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
-  },
-  modalKeyboardView: {
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#1e293b',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '90%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  modalForm: {
-    padding: 20,
   },
   section: {
     marginBottom: 24,
@@ -774,47 +726,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  pickerModal: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
-  },
-  pickerContent: {
-    backgroundColor: '#1e293b',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '70%',
-  },
-  pickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  pickerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  pickerCloseIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   pickerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     gap: 12,
   },
   pickerItemText: {
