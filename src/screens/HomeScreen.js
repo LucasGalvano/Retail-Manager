@@ -48,7 +48,6 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadDashboardData();
-    Vibration.vibrate(30);
     setRefreshing(false);
   };
 
@@ -135,7 +134,6 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
   ];
 
   const handleActionPress = (screen) => {
-    Vibration.vibrate(30);
     onNavigate(screen);
   };
 

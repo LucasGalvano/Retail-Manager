@@ -3,6 +3,7 @@ import {View,Text,TextInput,TouchableOpacity,StyleSheet,ScrollView,StatusBar,Ale
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../services/StorageServices';
+import { SoundService } from '../services/SoundService';
 
 // ========== TELA DE LOGIN ==========
 const Login = ({ onLoginSuccess, onSwitchToCadastro }) => {
@@ -13,6 +14,7 @@ const Login = ({ onLoginSuccess, onSwitchToCadastro }) => {
   const handleLogin = async () => {
     if (!email || !senha) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
@@ -24,6 +26,7 @@ const Login = ({ onLoginSuccess, onSwitchToCadastro }) => {
       onLoginSuccess(result.user);
     } catch (error) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', error.message);
     } finally {
       setLoading(false);

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import { productService } from '../services/StorageServices';
+import { SoundService } from '../services/SoundService';
 
 const ProductsScreen = ({ user, onBack }) => {
   const [products, setProducts] = useState([]);
@@ -14,7 +15,7 @@ const ProductsScreen = ({ user, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Form state
+  
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [estoque, setEstoque] = useState('');
@@ -42,17 +43,6 @@ const ProductsScreen = ({ user, onBack }) => {
     setProducts(data);
   };
 
-  const playSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: 'https://www.soundjay.com/buttons/sounds/beep-07a.mp3' },
-        { shouldPlay: true }
-      );
-      await sound.playAsync();
-    } catch (error) {
-      console.log('Erro ao reproduzir som:', error);
-    }
-  };
 
   const handleChoosePhoto = () => {
     Alert.alert(
@@ -92,6 +82,7 @@ const ProductsScreen = ({ user, onBack }) => {
         setFotoUrl(result.assets[0].uri);
       }
     } catch (error) {
+      SoundService.playError();
       Alert.alert('Erro', 'Não foi possível abrir a câmera');
     }
   };
@@ -109,6 +100,7 @@ const ProductsScreen = ({ user, onBack }) => {
         setFotoUrl(result.assets[0].uri);
       }
     } catch (error) {
+      SoundService.playError();
       Alert.alert('Erro', 'Não foi possível abrir a galeria');
     }
   };
@@ -139,6 +131,7 @@ const ProductsScreen = ({ user, onBack }) => {
   const handleSaveProduct = async () => {
     if (!nome || !preco || !estoque) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
       return;
     }
@@ -158,10 +151,8 @@ const ProductsScreen = ({ user, onBack }) => {
         await productService.add(user.uid, productData);
       }
 
-      // Feedback sensorial
-      Vibration.vibrate(50);
-      await playSound();
-
+      SoundService.playBeep();
+      
       Alert.alert(
         'Sucesso',
         editingProduct ? 'Produto atualizado!' : 'Produto cadastrado!',
@@ -171,6 +162,7 @@ const ProductsScreen = ({ user, onBack }) => {
       await loadProducts();
     } catch (error) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Não foi possível salvar o produto');
     } finally {
       setLoading(false);
@@ -198,7 +190,7 @@ const ProductsScreen = ({ user, onBack }) => {
           onPress: async () => {
             try {
               await productService.delete(user.uid, product.id);
-              Vibration.vibrate([50, 50]);
+              SoundService.playSuccess();
               await loadProducts();
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível excluir o produto');
@@ -301,7 +293,6 @@ const ProductsScreen = ({ user, onBack }) => {
       <TouchableOpacity
         style={styles.fab}
         onPress={() => {
-          Vibration.vibrate(30);
           setModalVisible(true);
         }}
         activeOpacity={0.8}

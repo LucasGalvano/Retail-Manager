@@ -5,6 +5,7 @@ import {View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { employeeService } from '../services/StorageServices';
+import { SoundService } from '../services/SoundService';
 
 const EmployeesScreen = ({ user, onBack }) => {
   const [employees, setEmployees] = useState([]);
@@ -12,7 +13,6 @@ const EmployeesScreen = ({ user, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
 
-  // Form state
   const [nome, setNome] = useState('');
   const [salario, setSalario] = useState('');
   const [meta, setMeta] = useState('');
@@ -30,6 +30,7 @@ const EmployeesScreen = ({ user, onBack }) => {
   const handleSaveEmployee = async () => {
     if (!nome || !salario || !meta || !bonusPercentual) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
@@ -49,7 +50,7 @@ const EmployeesScreen = ({ user, onBack }) => {
         await employeeService.add(user.uid, employeeData);
       }
 
-      Vibration.vibrate(50);
+      SoundService.playSuccess();
 
       Alert.alert(
         'Sucesso',
@@ -60,6 +61,7 @@ const EmployeesScreen = ({ user, onBack }) => {
       await loadEmployees();
     } catch (error) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Não foi possível salvar o funcionário');
     } finally {
       setLoading(false);
@@ -87,9 +89,10 @@ const EmployeesScreen = ({ user, onBack }) => {
           onPress: async () => {
             try {
               await employeeService.delete(user.uid, employee.id);
-              Vibration.vibrate([50, 50]);
+              SoundService.playSuccess();
               await loadEmployees();
             } catch (error) {
+              SoundService.playError();
               Alert.alert('Erro', 'Não foi possível excluir o funcionário');
             }
           },
@@ -199,7 +202,6 @@ const EmployeesScreen = ({ user, onBack }) => {
       <TouchableOpacity
         style={styles.fab}
         onPress={() => {
-          Vibration.vibrate(30);
           setModalVisible(true);
         }}
         activeOpacity={0.8}

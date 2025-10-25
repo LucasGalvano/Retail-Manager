@@ -4,6 +4,7 @@ import {View, Text, TouchableOpacity, StyleSheet, ScrollView, StatusBar,
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { salesService, employeeService, productService } from '../services/StorageServices';
+import { SoundService } from '../services/SoundService';
 
 const SalesScreen = ({ user, onBack }) => {
   const [currentView, setCurrentView] = useState('list');
@@ -53,13 +54,11 @@ const SalesScreen = ({ user, onBack }) => {
       }]);
     }
 
-    Vibration.vibrate(30);
     setCurrentView('newSale');
   };
 
   const handleRemoveFromCart = (produtoId) => {
     setCart(cart.filter(item => item.produtoId !== produtoId));
-    Vibration.vibrate(30);
   };
 
   const handleUpdateQuantity = (produtoId, newQuantity) => {
@@ -71,6 +70,7 @@ const SalesScreen = ({ user, onBack }) => {
     const item = cart.find(i => i.produtoId === produtoId);
     if (item && newQuantity > item.estoqueDisponivel) {
       Alert.alert('Erro', `Estoque disponível: ${item.estoqueDisponivel}`);
+      SoundService.playError();
       return;
     }
 
@@ -88,12 +88,14 @@ const SalesScreen = ({ user, onBack }) => {
   const handleFinalizeSale = async () => {
     if (!selectedEmployee) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Selecione um funcionário para a venda');
       return;
     }
 
     if (cart.length === 0) {
       Vibration.vibrate([100, 50, 100]);
+      SoundService.playError();
       Alert.alert('Erro', 'Adicione produtos ao carrinho');
       return;
     }
@@ -116,8 +118,11 @@ const SalesScreen = ({ user, onBack }) => {
                 })),
               });
 
-              Vibration.vibrate([50, 50, 50]);
-              Alert.alert('Sucesso!', 'Venda realizada com sucesso!');
+                const sounds = [SoundService.playCashier, SoundService.playPlim];
+                const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+                randomSound();
+
+                Alert.alert('Sucesso!', 'Venda realizada com sucesso!');
 
               setSelectedEmployee(null);
               setCart([]);
@@ -125,6 +130,7 @@ const SalesScreen = ({ user, onBack }) => {
               await loadData();
             } catch (error) {
               Vibration.vibrate([100, 50, 100]);
+              SoundService.playError();
               Alert.alert('Erro', error.message);
             } finally {
               setLoading(false);
@@ -235,14 +241,15 @@ const SalesScreen = ({ user, onBack }) => {
           style={styles.fab}
           onPress={() => {
             if (employees.length === 0) {
+              SoundService.playError();
               Alert.alert('Atenção', 'Cadastre funcionários antes de realizar vendas');
               return;
             }
             if (products.length === 0) {
+              SoundService.playError();
               Alert.alert('Atenção', 'Cadastre produtos antes de realizar vendas');
               return;
             }
-            Vibration.vibrate(30);
             setCurrentView('newSale');
           }}
           activeOpacity={0.8}
@@ -406,7 +413,6 @@ const SalesScreen = ({ user, onBack }) => {
               onPress={() => {
                 setSelectedEmployee(employee);
                 setCurrentView('newSale');
-                Vibration.vibrate(30);
               }}
             >
               <Ionicons name="person" size={24} color="#a855f7" />
