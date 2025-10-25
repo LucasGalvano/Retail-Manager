@@ -6,6 +6,8 @@ import HomeScreen from './src/screens/HomeScreen';
 import ProductsScreen from './src/screens/ProductsScreen';
 import EmployeesScreen from './src/screens/EmployeeScreen';
 import SalesScreen from './src/screens/SalesScreen';
+import ReportsScreen from './src/screens/ReportsScreen';
+
 
 export default function App() {
   const [screen, setScreen] = useState('login');
@@ -88,15 +90,9 @@ export default function App() {
   }
 
   if (screen === 'reports') {
-    // Renderiza Home novamente, pois a tela real ainda não existe.
-    return (
-        <HomeScreen
-            user={user}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-        />
-    );
+    return <ReportsScreen user={user} onBack={handleBack} />;
   } 
+  
   // Fallback: Se o estado estiver inconsistente, volta para o login
   return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
 }

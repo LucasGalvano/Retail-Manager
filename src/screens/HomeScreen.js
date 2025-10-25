@@ -12,7 +12,7 @@ const HomeScreen = ({ user, onLogout, onNavigate }) => {
   const [todaySalesTotal, setTodaySalesTotal] = useState(0);
   const [recentSales, setRecentSales] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({totalValue: 0,lowStock: 0,});
+  const [stats, setStats] = useState({totalValue: 0, lowStock: 0,});
 
   useEffect(() => {
     loadDashboardData();
