@@ -149,6 +149,10 @@ const ReportsScreen = ({ user, onBack }) => {
   const generateSalesChart = () => {
     const dates = salesByDay.map(d => formatDate(d.date));
     const values = salesByDay.map(d => d.total);
+    const maxValue = Math.max(...values);
+    
+    // Ajuste dinâmico do range do eixo Y
+    const yMax = maxValue > 0 ? maxValue * 1.2 : 100;
 
     return `
       <!DOCTYPE html>
@@ -170,6 +174,13 @@ const ReportsScreen = ({ user, onBack }) => {
                   color: '#059669',
                   width: 2
                 }
+              },
+              text: ${JSON.stringify(values.map(v => 'R$ ' + v.toFixed(2)))},
+              textposition: 'outside',
+              textfont: {
+                color: '#10b981',
+                size: 11,
+                weight: 'bold'
               }
             }];
             
@@ -179,15 +190,18 @@ const ReportsScreen = ({ user, onBack }) => {
               xaxis: {
                 color: '#94a3b8',
                 gridcolor: '#334155',
-                fixedrange: true
+                fixedrange: true,
+                tickangle: -45
               },
               yaxis: {
                 color: '#94a3b8',
                 gridcolor: '#334155',
                 tickprefix: 'R$ ',
-                fixedrange: true
+                fixedrange: true,
+                range: [0, ${yMax}],
+                showticklabels: true
               },
-              margin: { t: 20, b: 40, l: 60, r: 20 }
+              margin: { t: 30, b: 60, l: 70, r: 20 }
             };
             
             var config = { 
@@ -207,7 +221,11 @@ const ReportsScreen = ({ user, onBack }) => {
   const generateEmployeeSalesChart = () => {
     const names = salesByEmployee.map(e => e.funcionarioNome);
     const values = salesByEmployee.map(e => e.totalVendas);
-    const colors = ['#10b981', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444'];
+    const colors = ['#10b981', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899'];
+    
+    // Ajuste dinâmico da altura baseado na quantidade de funcionários
+    const heightPerBar = 50;
+    const dynamicHeight = Math.max(300, names.length * heightPerBar);
 
     return `
       <!DOCTYPE html>
@@ -217,7 +235,7 @@ const ReportsScreen = ({ user, onBack }) => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         </head>
         <body style="margin:0;padding:0;background:#1e293b;overflow:hidden;">
-          <div id="chart" style="width:100%;height:100%;"></div>
+          <div id="chart" style="width:100%;height:${dynamicHeight}px;"></div>
           <script>
             var data = [{
               x: ${JSON.stringify(values)},
@@ -232,7 +250,8 @@ const ReportsScreen = ({ user, onBack }) => {
                 }
               },
               text: ${JSON.stringify(values.map(v => 'R$ ' + v.toFixed(2)))},
-              textposition: 'auto',
+              textposition: 'inside',
+              insidetextanchor: 'middle',
               textfont: {
                 color: '#fff',
                 size: 12,
@@ -243,6 +262,7 @@ const ReportsScreen = ({ user, onBack }) => {
             var layout = {
               paper_bgcolor: '#1e293b',
               plot_bgcolor: '#1e293b',
+              height: ${dynamicHeight},
               xaxis: {
                 color: '#94a3b8',
                 gridcolor: '#334155',
@@ -252,9 +272,10 @@ const ReportsScreen = ({ user, onBack }) => {
               yaxis: {
                 color: '#94a3b8',
                 automargin: true,
-                fixedrange: true
+                fixedrange: true,
+                tickfont: { size: 12 }
               },
-              margin: { t: 20, b: 40, l: 120, r: 20 }
+              margin: { t: 20, b: 50, l: 130, r: 30 }
             };
             
             var config = { 
@@ -272,8 +293,12 @@ const ReportsScreen = ({ user, onBack }) => {
 
   // Gerar HTML para gráfico de produtos mais vendidos
   const generateTopProductsChart = () => {
-    const names = topProducts.map(p => p.nome.length > 15 ? p.nome.substring(0, 15) + '...' : p.nome);
+    const names = topProducts.map(p => p.nome.length > 20 ? p.nome.substring(0, 20) + '...' : p.nome);
     const quantities = topProducts.map(p => p.quantidade);
+    
+    // Ajuste dinâmico da altura baseado na quantidade de produtos
+    const heightPerBar = 50;
+    const dynamicHeight = Math.max(300, names.length * heightPerBar);
 
     return `
       <!DOCTYPE html>
@@ -283,7 +308,7 @@ const ReportsScreen = ({ user, onBack }) => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         </head>
         <body style="margin:0;padding:0;background:#1e293b;overflow:hidden;">
-          <div id="chart" style="width:100%;height:100%;"></div>
+          <div id="chart" style="width:100%;height:${dynamicHeight}px;"></div>
           <script>
             var data = [{
               x: ${JSON.stringify(quantities)},
@@ -298,7 +323,8 @@ const ReportsScreen = ({ user, onBack }) => {
                 }
               },
               text: ${JSON.stringify(quantities.map(q => q + ' un'))},
-              textposition: 'auto',
+              textposition: 'inside',
+              insidetextanchor: 'middle',
               textfont: {
                 color: '#fff',
                 size: 12,
@@ -306,21 +332,23 @@ const ReportsScreen = ({ user, onBack }) => {
               }
             }];
             
-            var layout: {
+            var layout = {
               paper_bgcolor: '#1e293b',
               plot_bgcolor: '#1e293b',
+              height: ${dynamicHeight},
               xaxis: {
                 color: '#94a3b8',
                 gridcolor: '#334155',
-                title: { text: 'Quantidade', font: { color: '#94a3b8' } },
+                title: { text: 'Quantidade', font: { color: '#94a3b8', size: 12 } },
                 fixedrange: true
               },
               yaxis: {
                 color: '#94a3b8',
                 automargin: true,
-                fixedrange: true
+                fixedrange: true,
+                tickfont: { size: 12 }
               },
-              margin: { t: 20, b: 50, l: 120, r: 20 }
+              margin: { t: 20, b: 60, l: 140, r: 30 }
             };
             
             var config = { 
@@ -442,7 +470,7 @@ const ReportsScreen = ({ user, onBack }) => {
               <Ionicons name="people" size={20} color="#a855f7" />
               <Text style={styles.chartTitle}>Vendas por Funcionário</Text>
             </View>
-            <View style={styles.chartContainer}>
+            <View style={[styles.chartContainer, { height: Math.max(300, salesByEmployee.length * 50) }]}>
               <WebView
                 source={{ html: generateEmployeeSalesChart() }}
                 style={styles.webview}
