@@ -27,6 +27,14 @@ const EmployeesScreen = ({ user, onBack }) => {
     setEmployees(data);
   };
 
+  const formatDecimalInput = (text) => {
+    return text.replace(/[^0-9.,]/g, '');
+  };
+
+  const parseDecimalValue = (text) => {
+    return parseFloat(text.replace(',', '.')) || 0;
+  };
+
   const handleSaveEmployee = async () => {
     if (!nome || !salario || !meta || !bonusPercentual) {
       Vibration.vibrate([100, 50, 100]);
@@ -38,10 +46,10 @@ const EmployeesScreen = ({ user, onBack }) => {
     setLoading(true);
     try {
       const employeeData = {
-        nome,
-        salario: parseFloat(salario),
-        meta: parseFloat(meta),
-        bonusPercentual: parseFloat(bonusPercentual),
+        nome,      
+        salario: parseDecimalValue(salario),
+        meta: parseDecimalValue(meta),
+        bonusPercentual: parseDecimalValue(bonusPercentual),
       };
 
       if (editingEmployee) {
@@ -255,8 +263,8 @@ const EmployeesScreen = ({ user, onBack }) => {
                     placeholder="0.00"
                     placeholderTextColor="#64748b"
                     value={salario}
-                    onChangeText={setSalario}
-                    keyboardType="numeric"
+                    onChangeText={(text) => setSalario(formatDecimalInput(text))}
+                    keyboardType="decimal-pad"
                   />
                 </View>
 
@@ -266,9 +274,9 @@ const EmployeesScreen = ({ user, onBack }) => {
                     style={styles.input}
                     placeholder="0.00"
                     placeholderTextColor="#64748b"
-                    value={meta}
-                    onChangeText={setMeta}
-                    keyboardType="numeric"
+                    value={meta}    
+                    onChangeText={(text) => setMeta(formatDecimalInput(text))}
+                    keyboardType="decimal-pad"
                   />
                 </View>
 
@@ -278,9 +286,9 @@ const EmployeesScreen = ({ user, onBack }) => {
                     style={styles.input}
                     placeholder="Ex: 5"
                     placeholderTextColor="#64748b"
-                    value={bonusPercentual}
-                    onChangeText={setBonusPercentual}
-                    keyboardType="numeric"
+                    value={bonusPercentual}    
+                    onChangeText={(text) => setBonusPercentual(formatDecimalInput(text))}
+                    keyboardType="decimal-pad"
                   />
                   <Text style={styles.inputHint}>
                     Percentual sobre o salário ao atingir a meta
@@ -295,9 +303,9 @@ const EmployeesScreen = ({ user, onBack }) => {
                       <Text style={styles.previewLabel}>Salário com Bônus:</Text>
                       <Text style={styles.previewValue}>
                         {formatCurrency(calculateSalaryWithBonus(
-                          parseFloat(salario) || 0,
-                          parseFloat(meta) || 0,
-                          parseFloat(bonusPercentual) || 0
+                          parseDecimalValue(salario),
+                          parseDecimalValue(meta),
+                          parseDecimalValue(bonusPercentual)
                         ))}
                       </Text>
                     </View>

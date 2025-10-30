@@ -44,6 +44,17 @@ const ProductsScreen = ({ user, onBack }) => {
   };
 
 
+  const formatDecimalInput = (text) => {
+    // Remove tudo que não é número, vírgula ou ponto
+    return text.replace(/[^0-9.,]/g, '');
+  };
+
+  const parseDecimalValue = (text) => {
+    // Substitui vírgula por ponto e converte para número
+    return parseFloat(text.replace(',', '.')) || 0;
+  };
+
+
   const handleChoosePhoto = () => {
     Alert.alert(
       'Adicionar Foto',
@@ -140,7 +151,7 @@ const ProductsScreen = ({ user, onBack }) => {
     try {
       const productData = {
         nome,
-        preco: parseFloat(preco),
+        preco: parseDecimalValue(preco),
         estoque: parseInt(estoque),
         fotoUrl: fotoUrl || 'https://via.placeholder.com/150',
       };
@@ -365,13 +376,13 @@ const ProductsScreen = ({ user, onBack }) => {
                   <View style={styles.inputRow}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                       <Text style={styles.inputLabel}>Preço (R$) *</Text>
-                      <TextInput
+                        <TextInput
                         style={styles.input}
-                        placeholder="0.00"
+                        placeholder="0,00"
                         placeholderTextColor="#64748b"
                         value={preco}
-                        onChangeText={setPreco}
-                        keyboardType="numeric"
+                        onChangeText={(text) => setPreco(formatDecimalInput(text))}
+                        keyboardType="decimal-pad"
                       />
                     </View>
 
