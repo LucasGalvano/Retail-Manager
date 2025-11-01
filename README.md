@@ -1,197 +1,217 @@
-# Retail Manager 📊
+# 🏪 Retail Manager
 
-Aplicativo mobile de gestão comercial desenvolvido em React Native para controle completo de produtos, funcionários e vendas.
+![React Native](https://img.shields.io/badge/React%20Native-0.74+-blue?logo=react)
+![Expo SDK](https://img.shields.io/badge/Expo%20SDK-52-purple?logo=expo)
+![Status](https://img.shields.io/badge/Status-Completo-success)
+![License](https://img.shields.io/badge/Licen%C3%A7a-Acad%C3%AAmica-lightgrey)
 
-## Visão Geral e Requisitos
+> Aplicativo mobile completo de **gestão comercial**, desenvolvido em **[React Native](https://reactnative.dev/)** + **[Expo](https://docs.expo.dev/)**, com controle de **produtos, funcionários, vendas e relatórios interativos**.
 
-O **Retail Manager** é uma solução mobile para pequenos e médios varejistas gerenciarem suas operações diárias. O sistema oferece controle de estoque, registro de vendas, gestão de funcionários com cálculo automático de bônus e análises visuais de desempenho.
+---
 
-### Motivação
-A ausência de ferramentas acessíveis para gestão de pequenos negócios motivou este projeto, buscando substituir planilhas e cadernos por uma interface intuitiva e funcional.
+## 📋 Visão Geral
 
-### Requisitos Atendidos
-- ✅ **6 telas implementadas** (Login/Cadastro, Home, Produtos, Funcionários, Vendas, Relatórios)
-- ✅ **Imagens dinâmicas** via câmera, galeria ou URL
-- ✅ **Armazenamento local** com AsyncStorage
-- ✅ **Atuadores**: Vibração (feedbacks) e Sons (confirmações de ações)
+O **Retail Manager** é uma solução mobile voltada para pequenos e médios varejistas que desejam **gerenciar produtos, funcionários e vendas** de forma simples e intuitiva.  
+O app oferece:
 
-## Tecnologias Utilizadas
+- 🛍️ **Controle de estoque e produtos**  
+- 👥 **Gestão de funcionários com metas e bônus**  
+- 💰 **Registro de vendas com carrinho de compras**  
+- 📊 **Relatórios e dashboards interativos**  
+- 🎵 **Feedback sonoro e tátil para ações do usuário**
 
-- **React Native** + Expo SDK 52
-- **AsyncStorage** - Persistência de dados local
-- **Expo AV** - Reprodução de sons
-- **Expo Haptics** - Feedback tátil (vibração)
-- **Expo Image Picker** - Captura de fotos
-- **React Navigation** - Gerenciamento de navegação
-- **Expo Linear Gradient** - Gradientes visuais
-- **Plotly.js** + WebView - Gráficos interativos
+---
 
-## Funcionalidades
+## 🎯 Requisitos Atendidos
 
-### 1. Autenticação
-- Sistema completo de login e cadastro
-- Validação de credenciais e senhas
-- Feedback sonoro e tátil em erros
+✅ 6 telas completas (Login, Home, Produtos, Funcionários, Vendas, Relatórios)  
+✅ Imagens dinâmicas via câmera, galeria ou URL  
+✅ Armazenamento local persistente com AsyncStorage  
+✅ Atuadores: Sons + Vibração  
+✅ Gráficos interativos com Plotly.js + WebView  
 
-### 2. Dashboard (Home)
-- Métricas em tempo real: vendas do dia, produtos cadastrados, funcionários
-- Cards interativos com estatísticas
-- Ações rápidas para navegação
-- Lista das últimas vendas realizadas
-- Sistema de dicas para novos usuários
+---
 
-### 3. Gestão de Produtos
-- CRUD completo de produtos
-- Adição de fotos via câmera, galeria ou URL
-- Controle de preço e estoque
-- Alertas visuais para estoque baixo (<10 unidades)
-- Som de confirmação ao salvar
+## 🧩 Tecnologias Utilizadas
 
-### 4. Gestão de Funcionários
-- Cadastro com salário base, meta mensal e % de bônus
-- Preview em tempo real do salário com bônus
-- Listagem com informações consolidadas
-- Validações com feedback multissensorial
+- **[React Native 0.74+](https://reactnative.dev/docs/environment-setup)**  
+- **[Expo SDK 52](https://docs.expo.dev/versions/latest/)**  
+- **[AsyncStorage](https://react-native-async-storage.github.io/async-storage/docs/install/)** – persistência local  
+- **[Expo AV](https://docs.expo.dev/versions/latest/sdk/av/)** – reprodução de sons  
+- **[Expo Image Picker](https://docs.expo.dev/versions/latest/sdk/imagepicker/)** – captura e seleção de imagens  
+- **[Expo File System](https://docs.expo.dev/versions/latest/sdk/filesystem/)** – salvamento permanente de fotos  
+- **[Expo Linear Gradient](https://docs.expo.dev/versions/latest/sdk/linear-gradient/)** – gradientes visuais modernos  
+- **[React Native WebView](https://github.com/react-native-webview/react-native-webview)** + **[Plotly.js](https://plotly.com/javascript/)** – gráficos interativos  
+- **[@expo/vector-icons (Ionicons)](https://docs.expo.dev/guides/icons/)** – biblioteca de ícones  
 
-### 5. Sistema de Vendas
-- Seleção de funcionário responsável
-- Carrinho de compras com ajuste de quantidades
-- Validação automática de estoque
-- Cálculo em tempo real do total
-- Atualização automática de estoque após venda
-- Sons aleatórios de "caixa registradora" na confirmação
+---
 
-### 6. Relatórios e Analytics
-- **Gráfico de Vendas (7 dias)**: Barras verticais com valores
-- **Vendas por Funcionário**: Barras horizontais coloridas
-- **Top 5 Produtos**: Ranking de mais vendidos
-- **Análise de Bônus**: 
-  - Comparação vendas vs. meta
-  - Barra de progresso visual
-  - Cálculo automático de bônus ganho
-  - Status de atingimento de meta
+## ⚙️ Funcionalidades
 
-### 7. Feedback Multissensorial
-- **Sons**:
-  - `beep.mp3` - Salvar produtos
-  - `success_sound.mp3` - Ações bem-sucedidas
-  - `error_sound.mp3` - Erros e validações
-  - `plim.mp3` e `chi_ching.mp3` - Vendas finalizadas (aleatório)
-- **Vibração**: Padrões diferentes para sucesso, erro e ações críticas
+### 🔐 Autenticação
+- Cadastro e login local com AsyncStorage  
+- Validação de credenciais e prevenção de duplicatas  
+- Feedback sonoro e tátil em erros e sucesso  
 
-## Demonstração
+### 📊 Dashboard (Home)
+- Métricas em tempo real (vendas, produtos, funcionários)  
+- Cards interativos e últimas vendas realizadas  
+- Sistema de dicas para novos usuários  
 
-[Insira aqui GIF ou vídeo demonstrando o app]
+### 📦 Gestão de Produtos
+- CRUD completo com persistência local  
+- Adição de fotos via câmera, galeria ou URL  
+- Controle de estoque e alerta visual (<10 unidades)  
+- Sons contextuais ao salvar ou validar  
 
-**Principais fluxos a mostrar:**
-1. Login → Dashboard
-2. Cadastro de produto com foto
-3. Registro de venda completa
-4. Visualização de relatórios com gráficos
+### 👥 Gestão de Funcionários
+- Cadastro com **salário base**, **meta mensal** e **bônus (%)**  
+- Cálculo automático de bônus:
+  ```js
+  const bonus = (salario * bonusPercentual) / 100;
+  const salarioComBonus = salario + bonus;
+  ``` 
 
-## Estrutura do Projeto
+* Preview em tempo real do salário total
+
+### 💰 Sistema de Vendas
+
+* Seleção de funcionário responsável
+* Carrinho de compras com ajuste de quantidades
+* Validação automática de estoque
+* Atualização de estoque após venda
+* Sons aleatórios ao finalizar (“caixa registradora” / “plim”)
+
+### 📈 Relatórios e Analytics
+
+* **Gráfico de vendas (7 dias)**
+* **Vendas por funcionário**
+* **Top 5 produtos**
+* Comparação de metas e bônus com barra de progresso
+* Indicador visual: “✅ Meta atingida” ou “⏳ Em progresso”
+
+### 🎵 Feedback Multissensorial
+
+**Sons**
+
+* `beep.mp3` – salvar produtos
+* `success_sound.mp3` – ações bem-sucedidas
+* `error_sound.mp3` – erros e validações
+* `plim.mp3` e `chi_ching.mp3` – vendas finalizadas
+
+**Vibrações**
+
+* Sucesso: 50 ms
+* Erro: [100, 50, 100] ms
+* Atualização: 30 ms
+
+---
+
+## 🧱 Estrutura do Projeto
 
 ```
 retail-manager/
-├── assets/                    # Sons e recursos
+├── assets/
 │   ├── beep.mp3
 │   ├── chi_ching.mp3
 │   ├── error_sound.mp3
 │   ├── plim.mp3
 │   └── success_sound.mp3
 ├── src/
-│   ├── screens/              # Telas do aplicativo
+│   ├── screens/
 │   │   ├── LoginScreen.js
 │   │   ├── HomeScreen.js
 │   │   ├── ProductsScreen.js
 │   │   ├── EmployeeScreen.js
 │   │   ├── SalesScreen.js
 │   │   └── ReportsScreen.js
-│   └── services/             # Lógica de negócio
-│       ├── StorageServices.js    # CRUD com AsyncStorage
-│       └── SoundService.js       # Gerenciador de sons
-├── App.js                    # Componente principal
+│   └── services/
+│       ├── StorageServices.js
+│       └── SoundService.js
+├── App.js
 └── package.json
 ```
 
-## Instalação e Execução
+---
+
+## 🛠️ Instalação e Execução
 
 ### Pré-requisitos
-```bash
-Node.js 18+ instalado
-Expo CLI: npm install -g expo-cli
-App Expo Go no celular (Android/iOS)
-```
+
+* [Node.js 18+](https://nodejs.org/)
+* [Expo CLI](https://docs.expo.dev/more/expo-cli/) (`npm install -g expo-cli`)
+* App **Expo Go** (Android/iOS)
 
 ### Passos
 
-1. **Clone o repositório**
 ```bash
-git clone [URL_DO_REPOSITORIO]
-cd retail-manager
-```
-
-2. **Instale as dependências**
-```bash
+git clone https://github.com/LucasGalvano/Retail-Manager
+cd Retail-Manager
 npm install
-```
-
-3. **Inicie o projeto**
-```bash
 npx expo start
 ```
 
-4. **Execute no dispositivo**
-- Escaneie o QR Code com o Expo Go
-- Ou pressione `a` para Android / `i` para iOS (emuladores)
+Escaneie o QR Code exibido no terminal com o **Expo Go**.
 
-## Complexidade Técnica Implementada
+---
+
+## 💡 Complexidade Técnica
 
 ### 1. Agregação e Processamento de Dados
-- **Análise de bônus**: Cálculo comparativo vendas vs. metas com múltiplas métricas
-- **Estatísticas em tempo real**: Consolidação de dados de 3 coleções distintas
-- **Relatórios visuais**: Processamento e formatação de dados para gráficos Plotly
 
-### 2. Validações e Integridade
-- Validação de estoque em tempo real durante vendas
-- Atualização automática de estoque após transações
-- Sistema de chaves compostas para isolamento de dados por usuário
+* Cálculo de métricas e estatísticas combinando 3 coleções (produtos, funcionários, vendas)
+* Análise comparativa de vendas vs. metas com cálculo automático de bônus
 
-### 3. Experiência Multissensorial
-- 5 tipos diferentes de sons contextuais
-- Padrões de vibração específicos por tipo de ação
-- Feedback visual com gradientes e animações
+### 2. Persistência Local Avançada
+
+* Armazenamento completo com AsyncStorage
+* Sistema de chaves compostas por usuário
+* Imagens copiadas para diretório permanente via **Expo FileSystem**
+
+### 3. UX Multissensorial
+
+* 5 sons diferentes e padrões de vibração
+* Feedback imediato e responsivo
 
 ### 4. Arquitetura Modular
-- Services isolados para cada entidade (Auth, Products, Employees, Sales)
-- Reutilização de componentes e lógica
-- Separação clara de responsabilidades
 
-## Aprendizados e Próximos Passos
+* Services isolados (Auth, Products, Employees, Sales)
+* Lógica de negócio reutilizável e desacoplada
 
-### Principais Aprendizados
-- **AsyncStorage**: Domínio completo de CRUD local com chaves compostas para multi-usuário
-- **Feedback UX**: Implementação de sons e vibrações melhorou drasticamente a percepção de qualidade
-- **Agregação de dados**: Desenvolvi lógicas complexas para cálculos de métricas consolidadas
-- **Gráficos dinâmicos**: Integração Plotly + WebView para visualizações interativas
-- **Validações complexas**: Sistema robusto de verificação de estoque e transações
+---
 
-### Desafios Superados
-- Sincronização de atualizações entre múltiplas telas
-- Performance com múltiplas consultas ao AsyncStorage
-- Cálculos precisos de métricas financeiras
-- Renderização de gráficos responsivos com dados dinâmicos
+## 🎬 Demonstração
+
+🎥 Um vídeo demonstrativo será adicionado futuramente, mostrando:
+
+1. Login → Dashboard
+2. Cadastro de produto com foto
+3. Registro de venda completa
+4. Relatórios com gráficos dinâmicos
+
+---
+
+## 📚 Aprendizados
+
+* Domínio completo de CRUD com **AsyncStorage**
+* Persistência permanente de imagens com **Expo FileSystem**
+* Integração de gráficos com **Plotly.js** + **WebView**
+* Validações complexas e sincronização entre coleções
+* Feedbacks multissensoriais que melhoram a UX
 
 
 ---
 
-**Disciplina:** CCP150 - Desenvolvimento de Aplicativos Móveis  
-**Instituição:** Centro Universitário FEI  
-**Professor:** Rafael Gomes Alves e Isaac Jesus  
-**Desenvolvimento:** Projeto acadêmico - 2º Semestre 2025
+## 👨‍💻 Desenvolvimento Acadêmico
+
+📘 **Disciplina:** CCP150 – Desenvolvimento de Aplicativos Móveis
+
+🏫 **Instituição:** Centro Universitário FEI
+
+👨‍🏫 **Professores:** Rafael Gomes Alves e Isaac Jesus
 
 ---
 
-## Licença
+## 📄 Licença e Declaração
 
-Projeto desenvolvido para fins acadêmicos.
+Projeto desenvolvido **para fins acadêmicos**.

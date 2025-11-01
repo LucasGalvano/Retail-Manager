@@ -8,6 +8,39 @@ import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import { productService } from '../services/StorageServices';
 import { SoundService } from '../services/SoundService';
+import * as FileSystem from 'expo-file-system';
+
+// Adicione esta função ANTES do componente ProductsScreen
+const saveImagePermanently = async (imageUri) => {
+  try {
+    // Se já é uma URL externa, retorna ela mesma
+    if (imageUri.startsWith('http://') || imageUri.startsWith('https://')) {
+      return imageUri;
+    }
+
+    // Se já está no diretório permanente, retorna
+    if (imageUri.includes(FileSystem.documentDirectory)) {
+      return imageUri;
+    }
+
+    // Criar nome único para a imagem
+    const filename = `product_${Date.now()}.jpg`;
+    const permanentUri = FileSystem.documentDirectory + filename;
+
+    // Copiar imagem temporária para diretório permanente
+    await FileSystem.copyAsync({
+      from: imageUri,
+      to: permanentUri,
+    });
+
+    console.log('Imagem salva permanentemente:', permanentUri);
+    return permanentUri;
+  } catch (error) {
+    console.error('Erro ao salvar imagem:', error);
+    // Em caso de erro, retorna a URI original
+    return imageUri;
+  }
+};
 
 const ProductsScreen = ({ user, onBack }) => {
   const [products, setProducts] = useState([]);
@@ -89,8 +122,9 @@ const ProductsScreen = ({ user, onBack }) => {
         quality: 0.5,
       });
 
-      if (!result.canceled) {
-        setFotoUrl(result.assets[0].uri);
+      if (!result.canceled) {        
+        const permanentUri = await saveImagePermanently(result.assets[0].uri);
+        setFotoUrl(permanentUri);
       }
     } catch (error) {
       SoundService.playError();
@@ -107,8 +141,9 @@ const ProductsScreen = ({ user, onBack }) => {
         quality: 0.5,
       });
 
-      if (!result.canceled) {
-        setFotoUrl(result.assets[0].uri);
+      if (!result.canceled) {        
+        const permanentUri = await saveImagePermanently(result.assets[0].uri);
+        setFotoUrl(permanentUri);
       }
     } catch (error) {
       SoundService.playError();
