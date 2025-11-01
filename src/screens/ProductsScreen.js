@@ -8,9 +8,9 @@ import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import { productService } from '../services/StorageServices';
 import { SoundService } from '../services/SoundService';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
-// Adicione esta função ANTES do componente ProductsScreen
+// Função para salvar imagem permanentemente
 const saveImagePermanently = async (imageUri) => {
   try {
     // Se já é uma URL externa, retorna ela mesma
@@ -39,6 +39,33 @@ const saveImagePermanently = async (imageUri) => {
     console.error('Erro ao salvar imagem:', error);
     // Em caso de erro, retorna a URI original
     return imageUri;
+  }
+};
+
+// Função para deletar imagem do FileSystem
+const deleteImageFromFileSystem = async (imageUri) => {
+  try {
+    // Não deleta URLs externas
+    if (!imageUri || imageUri.startsWith('http://') || imageUri.startsWith('https://')) {
+      return;
+    }
+
+    // Não deleta placeholder
+    if (imageUri.includes('placeholder')) {
+      return;
+    }
+
+    // Verifica se é uma imagem local do app
+    if (imageUri.includes(FileSystem.documentDirectory)) {
+      const fileInfo = await FileSystem.getInfoAsync(imageUri);
+      
+      if (fileInfo.exists) {
+        await FileSystem.deleteAsync(imageUri);
+        console.log('Imagem deletada:', imageUri);
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao deletar imagem:', error);
   }
 };
 
@@ -122,7 +149,12 @@ const ProductsScreen = ({ user, onBack }) => {
         quality: 0.5,
       });
 
-      if (!result.canceled) {        
+      if (!result.canceled) {
+        // Se está editando e já tinha uma foto antiga, deleta
+        if (fotoUrl) {
+          await deleteImageFromFileSystem(fotoUrl);
+        }
+        
         const permanentUri = await saveImagePermanently(result.assets[0].uri);
         setFotoUrl(permanentUri);
       }
@@ -141,7 +173,12 @@ const ProductsScreen = ({ user, onBack }) => {
         quality: 0.5,
       });
 
-      if (!result.canceled) {        
+      if (!result.canceled) {
+        // Se está editando e já tinha uma foto antiga, deleta
+        if (fotoUrl) {
+          await deleteImageFromFileSystem(fotoUrl);
+        }
+        
         const permanentUri = await saveImagePermanently(result.assets[0].uri);
         setFotoUrl(permanentUri);
       }
@@ -192,6 +229,10 @@ const ProductsScreen = ({ user, onBack }) => {
       };
 
       if (editingProduct) {
+        // Se está editando e a foto mudou, deleta a antiga
+        if (editingProduct.fotoUrl !== productData.fotoUrl) {
+          await deleteImageFromFileSystem(editingProduct.fotoUrl);
+        }
         await productService.update(user.uid, editingProduct.id, productData);
       } else {
         await productService.add(user.uid, productData);
@@ -235,6 +276,9 @@ const ProductsScreen = ({ user, onBack }) => {
           style: 'destructive',
           onPress: async () => {
             try {
+              // Deleta a imagem do produto antes de deletar o produto
+              await deleteImageFromFileSystem(product.fotoUrl);
+              
               await productService.delete(user.uid, product.id);
               SoundService.playSuccess();
               await loadProducts();
