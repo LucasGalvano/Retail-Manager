@@ -35,7 +35,7 @@ O app oferece:
 ## 🧩 Tecnologias Utilizadas
 
 - **[React Native 0.74+](https://reactnative.dev/docs/environment-setup)**  
-- **[Expo SDK 52](https://docs.expo.dev/versions/latest/)**  
+- **[Expo SDK 55](https://docs.expo.dev/versions/latest/)**  
 - **[AsyncStorage](https://react-native-async-storage.github.io/async-storage/docs/install/)** – persistência local  
 - **[Expo AV](https://docs.expo.dev/versions/latest/sdk/av/)** – reprodução de sons  
 - **[Expo Image Picker](https://docs.expo.dev/versions/latest/sdk/imagepicker/)** – captura e seleção de imagens  
@@ -146,7 +146,7 @@ retail-manager/
 
 ```bash
 git clone https://github.com/LucasGalvano/Retail-Manager
-cd Retail-Manager
+cd retail_manager
 npm install
 npx expo start
 ```
@@ -182,7 +182,7 @@ Escaneie o QR Code exibido no terminal com o **Expo Go**.
 
 ## 🎬 Demonstração
 
-🎥 Um vídeo demonstrativo será adicionado futuramente, mostrando:
+[🎥 Vídeo de Demonstração](https://www.youtube.com/watch?v=GUOdLukNnes)
 
 1. Login → Dashboard
 2. Cadastro de produto com foto
@@ -209,6 +209,8 @@ Escaneie o QR Code exibido no terminal com o **Expo Go**.
 🏫 **Instituição:** Centro Universitário FEI
 
 👨‍🏫 **Professores:** Rafael Gomes Alves e Isaac Jesus
+
+🐈‍⬛ **Link do Repositório:** [Github](https://github.com/LucasGalvano/Retail-Manager)
 
 ---
 
