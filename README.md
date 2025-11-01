@@ -1,7 +1,7 @@
 # 🏪 Retail Manager
 
 ![React Native](https://img.shields.io/badge/React%20Native-0.74+-blue?logo=react)
-![Expo SDK](https://img.shields.io/badge/Expo%20SDK-52-purple?logo=expo)
+![Expo SDK](https://img.shields.io/badge/Expo%20SDK-55-purple?logo=expo)
 ![Status](https://img.shields.io/badge/Status-Completo-success)
 ![License](https://img.shields.io/badge/Licen%C3%A7a-Acad%C3%AAmica-lightgrey)
 
